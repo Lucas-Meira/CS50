@@ -13,6 +13,7 @@ static const unsigned int N = 26U;
 
 // Hash table
 node *table[N];
+node *last[N];
 
 char toLower(char c)
 {
@@ -103,6 +104,12 @@ bool load(const char *dictionary)
     {
         return false;
     }
+
+    for (size_t i = 0; i < N; i++)
+    {
+        last[i] = table[i];
+    }
+
     char word[LENGTH + 1];
 
     while (NULL != fgets(word, LENGTH, file))
@@ -125,19 +132,17 @@ bool load(const char *dictionary)
         }
         else
         {
-            node *tmp = table[hashValue];
 #ifdef DEBUG
             printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
 #endif
-            while (NULL != tmp->next)
-            {
-                tmp = tmp->next;
-            }
+
 
             strcpy(item->word, word);
             item->next = NULL;
 
-            tmp->next = item;
+            last[hashValue]->next = item;
+
+            last[hashValue] = last[hashValue]->next
 #ifdef DEBUG
             printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
             printf("[LOAD] %s, %p\n", tmp->next->word, tmp->next->next);
