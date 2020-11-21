@@ -51,7 +51,9 @@ bool check(const char *word)
 
     if (NULL == tmp->next)
     {
-        printf("[CHECK] %s\n", tmp->word);
+#ifdef DEBUG
+printf("[CHECK] %s\n", tmp->word);
+#endif
         if (strcmp(lowerWord, tmp->word) == 0)
         {
             return true;
@@ -62,7 +64,9 @@ bool check(const char *word)
 
     while (1)
     {
+#ifdef DEBUG
         printf("[CHECK] %s\n", tmp->word);
+#endif
         if (strcmp(lowerWord, tmp->word) == 0)
         {
             return true;
@@ -84,9 +88,9 @@ unsigned int hash(const char *word)
     unsigned int hashValue = 0;
 
     hashValue = *word - 'a';
-
+#ifdef DEBUG
     printf("[HASH] %d\n", hashValue);
-
+#endif
     return hashValue;
 }
 
@@ -99,53 +103,47 @@ bool load(const char *dictionary)
     {
         return false;
     }
-
-    int index = 0, misspellings = 0, words = 0;
     char word[LENGTH + 1];
 
-    for (int c = fgetc(file); c != EOF; c = fgetc(file))
+    while (NULL != fgets(word, LENGTH, file))
     {
-        if ('\n' == c)
+        // Remove \n
+        word[strlen(word)] = '\0';
+        node *item = malloc(sizeof(node));
+
+        unsigned int hashValue = hash(word);
+
+        if (NULL == table[hashValue])
         {
-            word[index] = '\0';
-            index = 0;
-            node *item = malloc(sizeof(node));
+            strcpy(item->word, word);
+            item->next = NULL;
 
-            unsigned int hashValue = hash(word);
-
-            if (NULL == table[hashValue])
-            {
-                strcpy(item->word, word);
-                item->next = NULL;
-
-                table[hashValue] = item;
-
-                printf("[LOAD] %s, %p\n", table[hashValue]->word, table[hashValue]->next);
-            }
-            else
-            {
-                node *tmp = table[hashValue];
-                printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
-
-                while (NULL != tmp->next)
-                {
-                    tmp = tmp->next;
-                }
-
-                strcpy(item->word, word);
-                item->next = NULL;
-
-                tmp->next = item;
-
-                printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
-                printf("[LOAD] %s, %p\n", tmp->next->word, tmp->next->next);
-            }
+            table[hashValue] = item;
+#ifdef DEBUG
+            printf("[LOAD] %s, %p\n", table[hashValue]->word, table[hashValue]->next);
+#endif
         }
         else
         {
-            word[index] = c;
-            index++;
+            node *tmp = table[hashValue];
+#ifdef DEBUG
+            printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
+#endif
+            while (NULL != tmp->next)
+            {
+                tmp = tmp->next;
+            }
+
+            strcpy(item->word, word);
+            item->next = NULL;
+
+            tmp->next = item;
+#ifdef DEBUG
+            printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
+            printf("[LOAD] %s, %p\n", tmp->next->word, tmp->next->next);
+#endif
         }
+    
     }
 
     return true;
