@@ -11,6 +11,7 @@
 
 // Prototypes
 char toLower(char c);
+bool freeList(node *n);
 bool check(const char *word);
 unsigned int hash(const char *word);
 bool load(const char *dictionary);

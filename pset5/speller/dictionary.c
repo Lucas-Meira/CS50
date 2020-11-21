@@ -106,8 +106,6 @@ bool load(const char *dictionary)
     char word[LENGTH + 1];
     node *item = malloc(sizeof(node));
 
-
-
     for (int c = fgetc(file); c != EOF; c = fgetc(file))
     {
         if ('\n' == c)
@@ -143,6 +141,8 @@ bool load(const char *dictionary)
         }
     }
 
+    free(item);
+
     return true;
 }
 
@@ -156,6 +156,32 @@ unsigned int size(void)
 // Unloads dictionary from memory, returning true if successful else false
 bool unload(void)
 {
-    // TODO
-    return false;
+    bool isFreed = false;
+
+    for (unsigned int i = 0; i < N; i++)
+    {
+        if (NULL != table[i])
+        {
+            isFreed = freeList(table[i]);
+
+            if (false == isFreed)
+            {
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+bool freeList(node *n)
+{
+    if (NULL != n->next)
+    {
+        return freeList(n->next);
+    }
+
+    free(n);
+
+    return true;
 }
