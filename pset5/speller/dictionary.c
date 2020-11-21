@@ -8,6 +8,8 @@
 
 #include "dictionary.h"
 
+
+
 // Number of buckets in hash table
 static const unsigned int N = 26U;
 
@@ -68,6 +70,7 @@ printf("[CHECK] %s\n", tmp->word);
 #ifdef DEBUG
         printf("[CHECK] %s\n", tmp->word);
 #endif
+        int a = strcmp(lowerWord, tmp->word);
         if (strcmp(lowerWord, tmp->word) == 0)
         {
             return true;
@@ -115,7 +118,7 @@ bool load(const char *dictionary)
     while (NULL != fgets(word, LENGTH, file))
     {
         // Remove \n
-        word[strlen(word)] = '\0';
+        word[strlen(word) - 1] = '\0';
         node *item = malloc(sizeof(node));
 
         unsigned int hashValue = hash(word);
@@ -126,6 +129,8 @@ bool load(const char *dictionary)
             item->next = NULL;
 
             table[hashValue] = item;
+
+            last[hashValue] = table[hashValue];
 #ifdef DEBUG
             printf("[LOAD] %s, %p\n", table[hashValue]->word, table[hashValue]->next);
 #endif
@@ -142,13 +147,13 @@ bool load(const char *dictionary)
 
             last[hashValue]->next = item;
 
-            last[hashValue] = last[hashValue]->next
+            last[hashValue] = last[hashValue]->next;
 #ifdef DEBUG
             printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
             printf("[LOAD] %s, %p\n", tmp->next->word, tmp->next->next);
 #endif
         }
-    
+
     }
 
     return true;
