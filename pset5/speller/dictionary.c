@@ -4,14 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
 
 #include "dictionary.h"
 
 
 
 // Number of buckets in hash table
-static const unsigned int N = 26U;
+const unsigned int N = 0xFFFF;
 
 // Hash table
 node *table[N];
@@ -89,9 +89,23 @@ printf("[CHECK] %s\n", tmp->word);
 // Hashes word to a number
 unsigned int hash(const char *word)
 {
-    unsigned int hashValue = 0;
+    uint16_t hashValue = 0xFFFF;
+  
+    for (int pos = 0, len = strlen(word); pos < len; pos++) 
+    {
+        hashValue ^= (uint16_t) word[pos];          // XOR byte into least sig. byte of crc
+    
+        for (int i = 8; i != 0; i--) {    // Loop over each bit
+        if ((hashValue & 0x0001) != 0) {      // If the LSB is set
+            hashValue >>= 1;                    // Shift right and XOR 0xA001
+            hashValue ^= 0xA001;
+        }
+        else                            // Else LSB is not set
+            hashValue >>= 1;                    // Just shift right
+        }
+    }
 
-    hashValue = *word - 'a';
+    //hashValue = *word - 'a';
 #ifdef DEBUG
     printf("[HASH] %d\n", hashValue);
 #endif
