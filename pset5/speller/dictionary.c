@@ -8,14 +8,6 @@
 
 #include "dictionary.h"
 
-// Represents a node in a hash table
-typedef struct node
-{
-    char word[LENGTH + 1];
-    struct node *next;
-}
-node;
-
 // Number of buckets in hash table
 static const unsigned int N = 26U;
 
@@ -59,6 +51,7 @@ bool check(const char *word)
 
     if (NULL == tmp->next)
     {
+        printf("[CHECK] %s\n", tmp->word);
         if (strcmp(lowerWord, tmp->word) == 0)
         {
             return true;
@@ -67,13 +60,18 @@ bool check(const char *word)
         return false;
     }
 
-    while (tmp->next != NULL)
+    while (1)
     {
+        printf("[CHECK] %s\n", tmp->word);
         if (strcmp(lowerWord, tmp->word) == 0)
         {
             return true;
         }
 
+        if (NULL == tmp->next)
+        {
+            break;
+        }
         tmp = tmp->next;
     }
 
@@ -87,7 +85,7 @@ unsigned int hash(const char *word)
 
     hashValue = *word - 'a';
 
-    printf("%d\n", hashValue);
+    printf("[HASH] %d\n", hashValue);
 
     return hashValue;
 }
@@ -104,7 +102,6 @@ bool load(const char *dictionary)
 
     int index = 0, misspellings = 0, words = 0;
     char word[LENGTH + 1];
-    node *item = malloc(sizeof(node));
 
     for (int c = fgetc(file); c != EOF; c = fgetc(file))
     {
@@ -112,16 +109,23 @@ bool load(const char *dictionary)
         {
             word[index] = '\0';
             index = 0;
+            node *item = malloc(sizeof(node));
 
             unsigned int hashValue = hash(word);
 
             if (NULL == table[hashValue])
             {
+                strcpy(item->word, word);
+                item->next = NULL;
+
                 table[hashValue] = item;
+
+                printf("[LOAD] %s, %p\n", table[hashValue]->word, table[hashValue]->next);
             }
             else
             {
                 node *tmp = table[hashValue];
+                printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
 
                 while (NULL != tmp->next)
                 {
@@ -131,7 +135,10 @@ bool load(const char *dictionary)
                 strcpy(item->word, word);
                 item->next = NULL;
 
-                tmp = item;
+                tmp->next = item;
+
+                printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
+                printf("[LOAD] %s, %p\n", tmp->next->word, tmp->next->next);
             }
         }
         else
@@ -140,8 +147,6 @@ bool load(const char *dictionary)
             index++;
         }
     }
-
-    free(item);
 
     return true;
 }
@@ -170,7 +175,7 @@ bool unload(void)
             }
         }
     }
-    
+
     return true;
 }
 
