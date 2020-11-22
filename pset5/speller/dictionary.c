@@ -9,6 +9,14 @@
 
 #include "dictionary.h"
 
+// Represents a node in a hash table
+typedef struct node
+{
+    char word[LENGTH + 1];
+    struct node *next;
+}
+node;
+
 
 #define DJB
 
@@ -49,7 +57,7 @@ bool check(const char *word)
     if (NULL == tmp->next)
     {
 #ifdef DEBUG
-printf("[CHECK] %s\n", tmp->word);
+        printf("[CHECK] %s\n", tmp->word);
 #endif
         if (strcmp(lowerWord, tmp->word) == 0)
         {
@@ -64,7 +72,6 @@ printf("[CHECK] %s\n", tmp->word);
 #ifdef DEBUG
         printf("[CHECK] %s\n", tmp->word);
 #endif
-        int a = strcmp(lowerWord, tmp->word);
         if (strcmp(lowerWord, tmp->word) == 0)
         {
             return true;
@@ -99,15 +106,19 @@ unsigned int hash(const char *word)
 
     for (int pos = 0, len = strlen(word); pos < len; pos++)
     {
-        hashValue ^= (uint16_t) word[pos];          // XOR byte into least sig. byte of crc
+        hashValue ^= (uint16_t) word[pos];
 
-        for (int i = 8; i != 0; i--) {    // Loop over each bit
-        if ((hashValue & 0x0001) != 0) {      // If the LSB is set
-            hashValue >>= 1;                    // Shift right and XOR 0xA001
-            hashValue ^= 0xA001;
-        }
-        else                            // Else LSB is not set
-            hashValue >>= 1;                    // Just shift right
+        for (int i = 8; i != 0; i--)
+        {
+            if ((hashValue & 0x0001) != 0)
+            {
+                hashValue >>= 1;
+                hashValue ^= 0xA001;
+            }
+            else
+            {
+                hashValue >>= 1;
+            }
         }
     }
 #endif
@@ -141,7 +152,7 @@ bool load(const char *dictionary)
 
         // Remove \n
         word[strlen(word) - 1] = '\0';
-        node *item = malloc(sizeof(node));
+        node *item = (node *) malloc(sizeof(node));
 
         unsigned int hashValue = hash(word);
 
@@ -176,6 +187,7 @@ bool load(const char *dictionary)
     return true;
 }
 
+unsigned long freeCount = 0;
 // Returns number of words in dictionary if loaded else 0 if not yet loaded
 unsigned int size(void)
 {
@@ -187,30 +199,37 @@ bool unload(void)
 {
     bool isFreed = false;
 
-    for (unsigned int i = 0; i < N; i++)
+    for (size_t i = 0; i < N; i++)
     {
         if (NULL != table[i])
         {
-            isFreed = freeList(table[i]);
-
-            if (false == isFreed)
+            node *tmp = table[i];
+            node *ntmp = table[i]->next;
+            if (NULL == tmp->next)
             {
-                return false;
+                free(tmp);
+                freeCount++;
+            }
+            else
+            {
+                while (1)
+                {
+                    free(tmp);
+                    tmp = ntmp;
+                    ntmp = ntmp->next;
+                    freeCount++;
+
+                    if(NULL == ntmp)
+                    {
+                        break;
+                    }
+                }
+
+                free(tmp);
+                freeCount++;
             }
         }
     }
-
-    return true;
-}
-
-bool freeList(node *n)
-{
-    if (NULL != n->next)
-    {
-        return freeList(n->next);
-    }
-
-    free(n);
 
     return true;
 }
