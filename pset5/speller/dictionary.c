@@ -5,10 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include "dictionary.h"
 
 
+#define DJB
 
 // Number of buckets in hash table
 const unsigned int N = 0xFFFF;
@@ -17,15 +19,7 @@ const unsigned int N = 0xFFFF;
 node *table[N];
 node *last[N];
 
-char toLower(char c)
-{
-    if (c >= 'a' && c <= 'z')
-    {
-        return c;
-    }
-
-    return c + 32;
-}
+unsigned int hashes = 0;
 
 // Returns true if word is in dictionary else false
 bool check(const char *word)
@@ -38,7 +32,7 @@ bool check(const char *word)
 
     while (lowerWord[index] != '\0')
     {
-        lowerWord[index] = toLower(lowerWord[index]);
+        lowerWord[index] = tolower(lowerWord[index]);
 
         index++;
     }
@@ -89,12 +83,24 @@ printf("[CHECK] %s\n", tmp->word);
 // Hashes word to a number
 unsigned int hash(const char *word)
 {
+#ifdef DJB
+    unsigned long hashValue = 5381;
+    int c = *word;
+
+    while (c != 0)
+    {
+        hashValue = ((hashValue << 5) + hashValue) + c; /* hash * 33 + c */
+        c = *++word;
+    }
+
+#endif
+#ifdef CRC
     uint16_t hashValue = 0xFFFF;
-  
-    for (int pos = 0, len = strlen(word); pos < len; pos++) 
+
+    for (int pos = 0, len = strlen(word); pos < len; pos++)
     {
         hashValue ^= (uint16_t) word[pos];          // XOR byte into least sig. byte of crc
-    
+
         for (int i = 8; i != 0; i--) {    // Loop over each bit
         if ((hashValue & 0x0001) != 0) {      // If the LSB is set
             hashValue >>= 1;                    // Shift right and XOR 0xA001
@@ -104,12 +110,12 @@ unsigned int hash(const char *word)
             hashValue >>= 1;                    // Just shift right
         }
     }
-
+#endif
     //hashValue = *word - 'a';
 #ifdef DEBUG
     printf("[HASH] %d\n", hashValue);
 #endif
-    return hashValue;
+    return hashValue & 0xFFFF;
 }
 
 // Loads dictionary into memory, returning true if successful else false
@@ -127,10 +133,12 @@ bool load(const char *dictionary)
         last[i] = table[i];
     }
 
-    char word[LENGTH + 1];
+    char word[LENGTH + 2];
 
-    while (NULL != fgets(word, LENGTH, file))
+    while (NULL != fgets(word, LENGTH + 2, file))
     {
+        hashes++;
+
         // Remove \n
         word[strlen(word) - 1] = '\0';
         node *item = malloc(sizeof(node));
@@ -151,11 +159,6 @@ bool load(const char *dictionary)
         }
         else
         {
-#ifdef DEBUG
-            printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
-#endif
-
-
             strcpy(item->word, word);
             item->next = NULL;
 
@@ -163,12 +166,12 @@ bool load(const char *dictionary)
 
             last[hashValue] = last[hashValue]->next;
 #ifdef DEBUG
-            printf("[LOAD] %s, %p\n", tmp->word, tmp->next);
-            printf("[LOAD] %s, %p\n", tmp->next->word, tmp->next->next);
+            printf("[LOAD] %s, %p\n", table[hashValue]->word, table[hashValue]->next);
 #endif
         }
-
     }
+
+    fclose(file);
 
     return true;
 }
@@ -176,20 +179,7 @@ bool load(const char *dictionary)
 // Returns number of words in dictionary if loaded else 0 if not yet loaded
 unsigned int size(void)
 {
-    unsigned int count = 0;
-    node *tmp;
-
-    for (size_t i = 0; i < N; i++)
-    {
-        tmp = table[i];
-        while(NULL == tmp->next)
-        {
-            count++;
-            tmp = tmp->next;
-        }
-        count++;
-    }
-    return count;
+    return hashes;
 }
 
 // Unloads dictionary from memory, returning true if successful else false
