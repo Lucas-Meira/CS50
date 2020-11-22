@@ -21,7 +21,7 @@ node;
 #define DJB
 
 // Number of buckets in hash table
-const unsigned int N = 0xFFFF;
+const unsigned int N = 0xFFFF + 1;
 
 // Hash table
 node *table[N];
@@ -54,28 +54,35 @@ bool check(const char *word)
         return false;
     }
 
-    if (NULL == tmp->next)
-    {
-#ifdef DEBUG
-        printf("[CHECK] %s\n", tmp->word);
-#endif
-        if (strcmp(lowerWord, tmp->word) == 0)
-        {
-            return true;
-        }
-
-        return false;
-    }
+    uint8_t equal = 0, i = 0;
 
     while (1)
     {
 #ifdef DEBUG
         printf("[CHECK] %s\n", tmp->word);
 #endif
-        if (strcmp(lowerWord, tmp->word) == 0)
+        while (lowerWord[i] != 0 && tmp->word[i] != 0)
+        {
+            if (lowerWord[i] == tmp->word[i])
+            {
+                equal++;
+            }
+
+            i++;
+
+            if (i != equal)
+            {
+                break;
+            }
+        }
+
+        if (i == equal)
         {
             return true;
         }
+
+        i = 0;
+        equal = 0;
 
         if (NULL == tmp->next)
         {
@@ -126,6 +133,9 @@ unsigned int hash(const char *word)
 #ifdef DEBUG
     printf("[HASH] %d\n", hashValue);
 #endif
+
+
+
     return hashValue & 0xFFFF;
 }
 
@@ -137,11 +147,6 @@ bool load(const char *dictionary)
     if (file == NULL)
     {
         return false;
-    }
-
-    for (size_t i = 0; i < N; i++)
-    {
-        last[i] = table[i];
     }
 
     char word[LENGTH + 2];
@@ -197,7 +202,6 @@ unsigned int size(void)
 // Unloads dictionary from memory, returning true if successful else false
 bool unload(void)
 {
-    bool isFreed = false;
 
     for (size_t i = 0; i < N; i++)
     {
