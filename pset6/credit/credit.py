@@ -15,7 +15,7 @@ number = number[::-1]
 for n in number[1::2]:
     if int(n) not in range(10):
         print("INVALID")
-        exit(0)  
+        exit(0)
 
     currentMult = 2 * int(n)
     currentMult = [int(i) for i in str(currentMult)]
@@ -24,7 +24,7 @@ for n in number[1::2]:
 for n in number[0::2]:
     if int(n) not in range(10):
         print("INVALID")
-        exit(0)  
+        exit(0)
 
     digitsSum += int(n)
 
@@ -41,7 +41,7 @@ elif (number[0] == "4"):
     exit(0)
 
 elif (len(number) == 15):
-    if (number[:2] == "34" or "37"):
+    if (number[:2] in ["34", "37"]):
         print("AMEX")
         exit(0)
     else:
@@ -49,12 +49,12 @@ elif (len(number) == 15):
         exit(0)
 
 elif (len(number) == 16):
-    if (51 <= int(number[:2]) <= 55 ):
+    if (51 <= int(number[:2]) <= 55):
         print("MASTERCARD")
         exit(0)
-    else:    
+    else:
         print("INVALID")
         exit(0)
-else :
+else:
     print("INVALID")
     exit(0)
