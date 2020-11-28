@@ -11,4 +11,4 @@ while (flag):
 for i in range(1, height + 1):
     print(" " * (height - i) + "#" * i, end="")
     print("  ", end="")
-    print("#" * i + " " * (height - i))
+    print("#" * i)
