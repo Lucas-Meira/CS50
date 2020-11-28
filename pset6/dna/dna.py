@@ -40,7 +40,11 @@ with open(argv[2], "r") as sequences:
                 modifiedSequence = modifiedSequence[len(STR):]
 
         # Find longest occurrence and store into the dictionnary
-        strCount[STR] = max(occurrences)
+        try:
+            strCount[STR] = max(occurrences)
+        except:
+            print("No match")
+            exit(0)
 
 
 matchCount = 0
