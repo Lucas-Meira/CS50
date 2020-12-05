@@ -9,6 +9,8 @@ if (len(argv) != 2):
 
 db = cs50.SQL("sqlite:///students.db")
 
+elements = 0
+
 with open(argv[1], "r") as characters:
 
     reader = csv.DictReader(characters)
@@ -25,7 +27,9 @@ with open(argv[1], "r") as characters:
         query = "INSERT INTO students (first, middle, last, house, birth) " +\
             "VALUES(?,?,?,?,?)"
 
-        print ("Adding " + row["name"])
+        print("Adding " + row["name"])
         db.execute(query, first, middle, last, row["house"], row["birth"])
 
+        elements += 1
 
+print("Added {} students".format(elements))

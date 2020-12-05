@@ -15,11 +15,11 @@ response = db.execute(query)
 
 for student in sorted(response, key=lambda item: item["last"]):
 
-    print(student["first"], end = " ")
+    print(student["first"], end=" ")
 
     if (student["middle"] != None):
-        print(student["middle"], end = " ")
+        print(student["middle"], end=" ")
     
-    print(student["last"], end = ", ")
+    print(student["last"], end=", ")
 
     print("born " + str(student["birth"]))
